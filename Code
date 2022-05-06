@@ -1,0 +1,107 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#define HEIGHT 400
+
+long duration;
+double distance;
+double vol;
+
+
+
+const char* ssid = "";
+const char* password = "";
+const char html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='refresh' content='30' charset='utf-8'>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title> Fernsteuerung Boot </title>
+  <style>
+   body{
+    font-family: oswald;
+    color: white;
+    background-image: url('https://images.unsplash.com/photo-1532157277712-8771574c33b5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=735&q=80');
+    background-size: cover;
+   }
+  </style>
+</head>
+<body>
+<header style='background-color:#000000; pedding:3rem 0;'>
+<h1 style='text-align:center;'>Fernsteuerung</h1>
+</header> 
+<br>
+  <section class ='container' style='text-align:center; margin-top:3rem;' >
+    <button onclick='ledOn()'>
+    Led an
+    </button>
+    <button onclick='ledOff()'>
+    Led aus
+    </button>
+  </section>
+   <footer class ="container" style ='margin-top:6rem'>
+        <div class ="row bottom-left">
+          <p class ="col-sm-4">
+            &copy;2022 Team Boot 1
+            </p>
+        </div>
+   </footer>
+</body>
+</html>
+)rawliteral";
+
+   
+ESP8266WebServer server(80);
+
+String header;
+
+void setup() {
+  pinMode(D7,OUTPUT);
+  digitalWrite(D7,LOW);
+  
+  Serial.begin(115200);
+ 
+  WiFi.begin(ssid,password);
+
+  while(WiFi.status()!= WL_CONNECTED)
+  {
+    delay(500);
+    Serial.println("not connected");
+  }
+  Serial.println("");
+  Serial.println("connected");
+    Serial.println(WiFi.localIP());
+
+        
+    server.begin();
+
+    server.on("/", [] () 
+    {
+      char s[strlen(html)+100];
+      sprintf(s,html,distance,vol);
+      server.send(200,"text/html",s);
+    });
+    
+}
+
+void ledOn()
+{
+  digitalWrite(D7,HIGH);
+}
+
+void ledOff()
+{
+  digitalWrite(D7,LOW);
+}
+
+void loop() {
+  
+  server.handleClient();
+
+ /*ledOff();
+ delay(1000);
+ ledOn();
+ delay(1000);
+ */
+}
